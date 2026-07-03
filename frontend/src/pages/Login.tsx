@@ -19,23 +19,7 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [cooldown, setCooldown] = useState(0);
   const [needVerify, setNeedVerify] = useState(false);
-  const [turnstileToken, setTurnstile] = useState('');
     const navigate = useNavigate();
-
-  // Render Turnstile widget
-  useEffect(() => {
-    const render = () => {
-      if (window.turnstile) {
-        window.turnstile.render('#turnstile-login', {
-          sitekey: '0x4AAAAAADrLaq7r2pyIGOYs',
-          callback: (token: string) => { setTurnstile(token); },
-        });
-      } else {
-        setTimeout(render, 200);
-      }
-    };
-    render();
-  }, []);
 
   useEffect(() => {
     if (cooldown <= 0) return;
@@ -55,7 +39,7 @@ export default function Login() {
     setNeedVerify(false);
     setLoading(true);
     try {
-      const res = await api.post('/login', { username: cleanUsername, password, turnstile: turnstileToken });
+      const res = await api.post('/login', { username: cleanUsername, password });
       localStorage.setItem('token', res.data.token);
       localStorage.setItem('user', JSON.stringify(res.data.user));
       navigate('/app');
@@ -74,7 +58,7 @@ export default function Login() {
         setError('Login belum berhasil. Periksa kembali data yang kamu masukkan.');
       }
       setLoading(false);
-      if (window.turnstile) window.turnstile.reset();
+      if (loading) setLoading(false);
     }
   };
 
@@ -103,7 +87,6 @@ export default function Login() {
             onChange={e => { setPassword(e.target.value); if (errors.password) setErrors(p => ({...p, password: ''})); }}
             error={!!errors.password} helperText={errors.password}
             sx={{ mb: 2 }} onKeyDown={e => e.key === 'Enter' && handleLogin()} />
-          <Box id="turnstile-login" sx={{ mb: 2, display: "flex", justifyContent: "center" }} />
           <Button fullWidth variant="contained" onClick={handleLogin} disabled={loading || cooldown > 0}
             startIcon={loading ? <CircularProgress size={18} color="inherit" /> : null}
             sx={{ py: 1.5, fontWeight: 700 }}>
