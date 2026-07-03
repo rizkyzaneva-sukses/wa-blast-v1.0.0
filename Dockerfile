@@ -13,7 +13,7 @@ WORKDIR /src
 COPY go.mod go.sum ./
 RUN go mod download
 COPY . .
-RUN CGO_ENABLED=1 go build -o /wa-assistant ./backend
+RUN CGO_ENABLED=1 go build -ldflags "-X wa-assistant/backend/license.DevMode=true" -o /wa-assistant ./backend
 
 # === Stage 3: Production ===
 FROM nginx:alpine
